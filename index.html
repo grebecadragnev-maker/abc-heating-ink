@@ -89,6 +89,14 @@ footer a{color:var(--acc2);text-decoration:none}
       <input type="radio" name="t" id="t3" value="hp"><label for="t3">Подово + термопомпа</label>
     </div>
 
+    <div style="margin-top:12px">
+      <label class="blk">Марка термопомпа (при „подово + термопомпа")</label>
+      <div class="seg">
+        <input type="radio" name="b" id="b1" value="tcl" checked><label for="b1">TCL</label>
+        <input type="radio" name="b" id="b2" value="palm"><label for="b2">PALM R290 (до 75 °C)</label>
+      </div>
+    </div>
+
     <div style="margin-top:18px">
       <label class="blk" for="area">Площ за отопление</label>
       <input type="range" id="area" min="20" max="300" step="5" value="90">
@@ -186,6 +194,15 @@ const PRICE = {
   rad:   { eurPerW: 0.0285, oversize: 1.15, pipesPerM2: 8.00, laborPerM2: 15.00 },
   heatPerM2: 80,
   hp: [ {kw: 8, eur: 2304}, {kw: 10, eur: 2454}, {kw: 12, eur: 2760}, {kw: 16, eur: 2916} ],
+  // PALM (R290) — EXW цени от оферта 2026; продажна = EXW × надценка × курс + ДДС
+  palm: [ {m:'PAL20-HTM', kw:8.2,  exw:1380},
+          {m:'PAL40-HTM', kw:12.5, exw:1450},
+          {m:'PAL60-HTM', kw:15.2, exw:1780},
+          {m:'PAL70-HTM', kw:19.3, exw:2150},
+          {m:'PAL80-HTM', kw:22.0, exw:2260} ],
+  palmMarkup: 1.40,        // надценка върху EXW
+  usdEur: 0.8915,          // курс USD→EUR, 23.10.2026
+  palmDerate: 0.70,        // дял от мощността при -7 °C спрямо A7/W35
   insFactor: { good: 0.85, mid: 1.0, bad: 1.20 },
   winFactor: 1.06,
   spread: 0.12
@@ -273,10 +290,20 @@ function calc() {
     total += panels + pipes + labor;
   }
   if (type === 'hp') {
-    const kw = needW / 1000;
-    const pump = PRICE.hp.find(p => p.kw >= kw) || PRICE.hp[PRICE.hp.length - 1];
-    items.push(['Термопомпа TCL ' + pump.kw + ' kW', pump.eur]);
-    total += pump.eur;
+    const brand = document.querySelector('input[name=b]:checked')?.value || 'tcl';
+    if (brand === 'palm') {
+      const req = needW / 1000 / PRICE.palmDerate;          // нужна мощност при A7/W35
+      const mdl = PRICE.palm.find(p => p.kw >= req) || PRICE.palm[PRICE.palm.length - 1];
+      const eurP = mdl.exw * PRICE.palmMarkup * PRICE.usdEur * PRICE.vat;
+      items.push(['Термопомпа PALM ' + mdl.m + ' · ' + mdl.kw + ' kW при A7/W35 (R290, A+++,' +
+                  ' при -7 °C ≈ ' + (mdl.kw * PRICE.palmDerate).toFixed(1) + ' kW)', eurP]);
+      total += eurP;
+    } else {
+      const kw = needW / 1000;
+      const pump = PRICE.hp.find(p => p.kw >= kw) || PRICE.hp[PRICE.hp.length - 1];
+      items.push(['Термопомпа TCL ' + pump.kw + ' kW', pump.eur]);
+      total += pump.eur;
+    }
   }
 
   animateTotal(total);
