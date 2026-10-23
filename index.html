@@ -51,6 +51,11 @@ color:var(--fg);border-radius:11px;padding:11px 12px;font:inherit}
 .brk div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:14px;color:var(--dim)}
 .brk b{color:var(--fg);font-variant-numeric:tabular-nums}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.preview{margin:16px 0 0;background:#0d1926;border:1px solid var(--line);border-radius:14px;
+padding:10px;overflow:hidden}
+.preview svg{display:block;width:100%;height:auto}
+.preview .cap{font-size:11.5px;color:var(--dim);margin-top:6px;text-align:center}
+@keyframes draw{to{stroke-dashoffset:0}}
 .btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;flex:1;min-width:150px;
 padding:14px 16px;border-radius:13px;text-decoration:none;font-weight:700;font-size:15px;
 background:linear-gradient(135deg,var(--acc),#ff5f3d);color:#fff;box-shadow:0 10px 24px rgba(255,110,60,.3)}
@@ -99,6 +104,13 @@ footer a{color:var(--acc2);text-decoration:none}
       </div>
     </div>
 
+    <div style="margin-top:14px">
+      <label class="blk" for="temp">Желана температура в стаята</label>
+      <input type="range" id="temp" min="20" max="24" step="0.5" value="22">
+      <div class="area"><b><span id="tempVal">22</span> °C</b>
+        <span style="color:var(--dim);font-size:13px">— колкото по-топло, толкова по-голяма мощност</span></div>
+    </div>
+
     <div class="row" style="margin-top:16px">
       <div>
         <label class="blk">Изолация на жилището</label>
@@ -121,6 +133,7 @@ footer a{color:var(--acc2);text-decoration:none}
   <div class="card result">
     <div class="sum"><span class="rng" id="range">—</span> <small>с ДДС и монтаж</small></div>
     <div id="per" class="lead" style="margin:6px 0 0;font-size:14px"></div>
+    <div class="preview" id="preview"></div>
     <div class="brk" id="brk"></div>
     <div class="cta">
       <a class="btn" id="wa" href="#" target="_blank" rel="noopener">💬 Пиши ми във WhatsApp</a>
@@ -177,21 +190,64 @@ const PRICE = {
 const $ = id => document.getElementById(id);
 const eur = v => Math.round(v).toLocaleString('bg-BG').replace(/\u00a0/g, ' ') + ' €';
 
+function drawPreview(step, area) {
+  const W = 560, H = 260, pad = 16;
+  const gap = step === 10 ? 9 : 14;
+  let d = "", prev = null, dir = 1, first = true;
+  for (let y = pad + gap / 2; y < H - pad; y += gap) {
+    if (first) { d += `M ${pad} ${y}`; first = false; }
+    else { d += ` L ${prev} ${y}`; }
+    const to = dir > 0 ? W - pad : pad;
+    d += ` L ${to} ${y}`;
+    prev = to; dir *= -1;
+  }
+  $('preview').innerHTML = `
+   <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+     <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+       <stop offset="0" stop-color="#ffb066"/><stop offset="1" stop-color="#ff5f3d"/></linearGradient></defs>
+     <rect x="3" y="3" width="${W - 6}" height="${H - 6}" rx="10" fill="#101f31"
+           stroke="#2a3f57" stroke-width="3"/>
+     <path d="${d}" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"
+           stroke-linecap="round" stroke-dasharray="6000" stroke-dashoffset="6000"
+           style="animation:draw 1s ease-out forwards"/>
+   </svg>
+   <div class="cap">така изглежда стаята ти · стъпка ${step} см · ${Math.round(area)} m²</div>`;
+}
+
+let lastTotal = 0;
+function animateTotal(to) {
+  const el = $('range');
+  const from = lastTotal || to * 0.9;
+  lastTotal = to;
+  const t0 = performance.now(), dur = 320;
+  function step(now) {
+    const k = Math.min(1, (now - t0) / dur);
+    const v = from + (to - from) * (1 - Math.pow(1 - k, 3));
+    el.textContent = eur(v * 0.88) + ' – ' + eur(v * 1.12);
+    if (k < 1) requestAnimationFrame(step);
+    else el.textContent = eur(to * 0.88) + ' – ' + eur(to * 1.12);
+  }
+  requestAnimationFrame(step);
+}
+
 function calc() {
   const area = +$('area').value;
   const type = document.querySelector('input[name=t]:checked').value;
   const ins  = document.querySelector('input[name=i]:checked').value;
   const win  = document.querySelector('input[name=w]:checked').value === 'yes';
 
-  let factor = PRICE.insFactor[ins] * (win ? PRICE.winFactor : 1);
+  const temp = +($('temp')?.value || 22);
+  const stepRaw = +(document.querySelector('input[name=s]:checked')?.value || 10);
+  // при 23+ °C стъпка 15 см не покрива топлинните загуби → смятаме на 10 см
+  const effStep = (type !== 'rad' && temp >= 23) ? 10 : stepRaw;
+  let factor = PRICE.insFactor[ins] * (win ? PRICE.winFactor : 1) * (1 + (temp - 21) * 0.06);
   let needW = area * PRICE.heatPerM2 * factor;
   let items = [], total = 0;
 
   if (type === 'floor' || type === 'hp') {
     const f = PRICE.floor;
-    const step = +(document.querySelector('input[name=s]:checked')?.value || 10);
-    const pipePerM2 = f.pipePerM2[step];
-    const loops = Math.max(3, Math.min(12, Math.ceil(area / f.m2PerLoop[step])));
+    const pipePerM2 = f.pipePerM2[effStep];
+    const loops = Math.max(3, Math.min(12, Math.ceil(area / f.m2PerLoop[effStep])));
     const manifold = f.manifold[loops] || f.manifold[12];
     const mats = area * (f.underlay20 + pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM + f.miscPerM2)
                  + manifold + f.box;
@@ -218,9 +274,18 @@ function calc() {
     total += pump.eur;
   }
 
-  const lo = total * (1 - PRICE.spread), hi = total * (1 + PRICE.spread);
-  $('range').textContent = eur(lo) + ' – ' + eur(hi);
-  const stepTxt = (type === 'rad') ? '' : ' · стъпка ' + (+document.querySelector('input[name=s]:checked').value) + ' см';
+  animateTotal(total);
+  if (type === 'rad') {
+    $('preview').innerHTML = '<div class="cap">радиатори: без серпентина в пода — ' +
+      Math.round(needW / 1000 * 10) / 10 + ' kW обща мощност</div>';
+  } else {
+    drawPreview(effStep, area);
+    if (effStep !== stepRaw) {
+      $('preview').innerHTML += '<div class="cap" style="color:#ffb066">при ' + temp +
+        ' °C стъпка 15 см не стига — сметнах на 10 см</div>';
+    }
+  }
+  const stepTxt = (type === 'rad') ? '' : ' · стъпка ' + effStep + ' см';
   $('per').textContent = '≈ ' + eur(total / area) + ' на m² · ' + area + ' m² · '
     + (type === 'rad' ? 'радиатори' : type === 'hp' ? 'подово + термопомпа' : 'подово отопление')
     + stepTxt
@@ -232,13 +297,16 @@ function calc() {
   const kw = Math.max(4, Math.round(needW / 1000));
   const msg = `Здравейте, изчислих в калкулатора: ${area} m², `
     + (type === 'rad' ? 'радиатори' : type === 'hp' ? 'подово + термопомпа' : 'подово отопление')
+    + (type === 'rad' ? '' : `, стъпка ${effStep} см`)
     + `, изолация ${({good:'добра',mid:'средна',bad:'слаба'}[ins])}`
     + (win ? ', стара дограма' : '')
-    + `. Излезе ${eur(lo)} – ${eur(hi)}. Може ли точна оферта?`;
+    + `, желани ${temp} °C`
+    + `. Излезе ${eur(total * 0.88)} – ${eur(total * 1.12)}. Може ли точна оферта?`;
   $('wa').href = 'https://wa.me/359879244416?text=' + encodeURIComponent(msg);
 }
 
 $('area').addEventListener('input', e => { $('areaVal').textContent = e.target.value; calc(); });
+$('temp').addEventListener('input', e => { $('tempVal').textContent = e.target.value; calc(); });
 document.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', calc));
 calc();
 </script>
