@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Колко струва отоплението? — калкулатор | ABCHeating</title>
+<meta name="description" content="Изчисли за 30 секунди ориентировъчната цена на подово отопление, радиатори или термопомпа. Реални цени на материали и труд, октомври 2026.">
+<meta property="og:title" content="Колко струва отоплението? — калкулатор | ABCHeating">
+<meta property="og:description" content="Подово, радиатори или термопомпа: виж ориентировъчната цена за твоето жилище за 30 секунди.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0f1b2a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<style>
+:root{
+  --navy:#0f1b2a;--navy2:#16263a;--card:#1a2b40;--line:#2a3f57;
+  --fg:#eef4fa;--dim:#9fb2c7;--acc:#ff8a3d;--acc2:#ffb066;--ok:#43c98a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 600px at 80% -10%,#24384f 0%,transparent 60%),
+radial-gradient(900px 500px at 0% 0%,#1d3148 0%,transparent 55%),var(--navy);
+color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0}
+.logo{font-weight:800;font-size:20px;letter-spacing:.3px}
+.logo span{color:var(--acc)}
+.tel{color:var(--fg);text-decoration:none;font-weight:700;white-space:nowrap}
+.tel small{display:block;color:var(--dim);font-weight:400;font-size:12px;text-align:right}
+h1{font-size:31px;line-height:1.2;margin:18px 0 8px}
+h1 em{color:var(--acc);font-style:normal}
+.lead{color:var(--dim);margin:0 0 18px;font-size:16px}
+.card{background:linear-gradient(180deg,var(--card),#16263a);border:1px solid var(--line);
+border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>div{flex:1;min-width:150px}
+label.blk{display:block;font-size:13px;color:var(--dim);margin:0 0 6px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{cursor:pointer;padding:9px 13px;border:1px solid var(--line);border-radius:999px;
+font-size:14px;color:var(--dim);background:#132234;transition:.12s}
+.seg input:checked+label{border-color:var(--acc);background:#2a1d15;color:var(--acc2);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=number],input[type=tel],input[type=text]{width:100%;background:#101f31;border:1px solid var(--line);
+color:var(--fg);border-radius:11px;padding:11px 12px;font:inherit}
+.area{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+.area b{font-size:26px;color:var(--acc2)}
+.result{margin-top:6px}
+.sum{font-size:38px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.sum small{font-size:18px;font-weight:600;color:var(--dim)}
+.sum .rng{color:var(--acc)}
+.brk{margin:12px 0 0;border-top:1px dashed var(--line);padding-top:10px}
+.brk div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:14px;color:var(--dim)}
+.brk b{color:var(--fg);font-variant-numeric:tabular-nums}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;flex:1;min-width:150px;
+padding:14px 16px;border-radius:13px;text-decoration:none;font-weight:700;font-size:15px;
+background:linear-gradient(135deg,var(--acc),#ff5f3d);color:#fff;box-shadow:0 10px 24px rgba(255,110,60,.3)}
+.btn.alt{background:#20344a;border:1px solid var(--line);color:var(--fg);box-shadow:none}
+.note{font-size:12.5px;color:var(--dim);margin-top:12px}
+h2{font-size:19px;margin:26px 0 8px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.step{background:#132234;border:1px solid var(--line);border-radius:14px;padding:14px}
+.step b{color:var(--acc2)}
+footer{margin:26px 0 10px;padding:16px 0;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
+footer a{color:var(--acc2);text-decoration:none}
+@media(max-width:560px){h1{font-size:25px}.sum{font-size:31px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ABC<span>Heating</span></div>
+    <a class="tel" href="tel:+359879244416">+359 87 924 4416<small>Обади се — без ангажимент</small></a>
+  </header>
+
+  <h1>Колко струва <em>отоплението</em> за твоето жилище?</h1>
+  <p class="lead">Изчисли за 30 секунди — по реалните цени на материалите ни от октомври 2026
+  плюс труд и монтаж. Накрая получаваш диапазон, не „от… до безкрай".</p>
+
+  <div class="card">
+    <label class="blk">Какво искаш да направим?</label>
+    <div class="seg" id="type">
+      <input type="radio" name="t" id="t1" value="floor" checked><label for="t1">Подово отопление</label>
+      <input type="radio" name="t" id="t2" value="rad"><label for="t2">Радиатори</label>
+      <input type="radio" name="t" id="t3" value="hp"><label for="t3">Подово + термопомпа</label>
+    </div>
+
+    <div style="margin-top:18px">
+      <label class="blk" for="area">Площ за отопление</label>
+      <input type="range" id="area" min="20" max="300" step="5" value="90">
+      <div class="area"><b><span id="areaVal">90</span> m²</b>
+        <span style="color:var(--dim);font-size:13px">— колко квадрата реално се отопляват</span></div>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <div>
+        <label class="blk">Изолация на жилището</label>
+        <div class="seg" id="ins">
+          <input type="radio" name="i" id="i1" value="good"><label for="i1">Добра</label>
+          <input type="radio" name="i" id="i2" value="mid" checked><label for="i2">Средна</label>
+          <input type="radio" name="i" id="i3" value="bad"><label for="i3">Слаба</label>
+        </div>
+      </div>
+      <div>
+        <label class="blk">Стара дограма?</label>
+        <div class="seg" id="win">
+          <input type="radio" name="w" id="w1" value="no" checked><label for="w1">Не</label>
+          <input type="radio" name="w" id="w2" value="yes"><label for="w2">Да</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card result">
+    <div class="sum"><span class="rng" id="range">—</span> <small>с ДДС и монтаж</small></div>
+    <div id="per" class="lead" style="margin:6px 0 0;font-size:14px"></div>
+    <div class="brk" id="brk"></div>
+    <div class="cta">
+      <a class="btn" id="wa" href="#" target="_blank" rel="noopener">💬 Пиши ми във WhatsApp</a>
+      <a class="btn alt" href="viber://chat?number=%2B359879244416">📞 Viber</a>
+      <a class="btn alt" href="tel:+359879244416">☎️ Обади се</a>
+    </div>
+    <p class="note" id="note">Ориентировъчна цена, не е оферта. Точната зависи от разположението,
+    броя кръгове, височината на пода и избраните материали — за това е безплатното оглеждане.</p>
+  </div>
+
+  <h2>Как смятаме</h2>
+  <div class="steps">
+    <div class="step"><b>1. Материали по цени от октомври 2026</b><br>
+      подложка 6.90 €/m², тръба 0.46 €/m, колектори Giaco, периферна лента, дребни материали.</div>
+    <div class="step"><b>2. Термопомпа TCL</b><br>
+      8 kW — 2 304 €, 10 kW — 2 454 €, 12 kW — 2 760 €, 16 kW — 2 916 € (с ДДС), сплит въздух-вода.</div>
+    <div class="step"><b>3. Труд и монтаж</b><br>
+      полагане, замазка, колектор, настройка и пускане — на m².</div>
+    <div class="step"><b>4. Диапазон ±12%</b><br>
+      защото всяко жилище е различно. Числото не е „от 1 €".</div>
+  </div>
+
+  <footer>
+    ABCHeating · отопление, ВиК и електрика · София и Пловдив<br>
+    <a href="tel:+359879244416">+359 87 924 4416</a> ·
+    <a href="https://abc-heating.org">abc-heating.org</a>
+    <div style="margin-top:8px;font-size:11.5px">Цените на материалите са с ДДС по актуалния ценоразпис
+    на доставчика (октомври 2026). Изчислението е ориентировъчно и не представлява търговска оферта
+    по смисъла на ЗЗП.</div>
+  </footer>
+</div>
+
+<script>
+const PRICE = {
+  floor: { underlay: 6.90, pipeM: 0.46, pipePerM2: 6.5, tapeM: 0.46, tapePerM2: 0.45,
+           manifoldPerLoop: 15.40, m2PerLoop: 15, miscPerM2: 2.50, laborPerM2: 18.00 },
+  rad:   { eurPerW: 0.0285, oversize: 1.15, pipesPerM2: 8.00, laborPerM2: 15.00 },
+  heatPerM2: 80,                       // W/m² при средна изолация
+  hp: [ {kw: 8, eur: 2304}, {kw: 10, eur: 2454}, {kw: 12, eur: 2760}, {kw: 16, eur: 2916} ],
+  insFactor: { good: 0.85, mid: 1.0, bad: 1.20 },
+  winFactor: 1.06,
+  spread: 0.12
+};
+const $ = id => document.getElementById(id);
+const eur = v => Math.round(v).toLocaleString('bg-BG').replace(/\u00a0/g, ' ') + ' €';
+
+function calc() {
+  const area = +$('area').value;
+  const type = document.querySelector('input[name=t]:checked').value;
+  const ins  = document.querySelector('input[name=i]:checked').value;
+  const win  = document.querySelector('input[name=w]:checked').value === 'yes';
+
+  let factor = PRICE.insFactor[ins] * (win ? PRICE.winFactor : 1);
+  let needW = area * PRICE.heatPerM2 * factor;
+  let items = [], total = 0;
+
+  if (type === 'floor' || type === 'hp') {
+    const f = PRICE.floor;
+    const mats = area * (f.underlay + f.pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM
+                 + f.manifoldPerLoop / f.m2PerLoop + f.miscPerM2) * (1 + (factor - 1) * 0.3);
+    const labor = area * f.laborPerM2;
+    items.push(['Материали за подово', mats], ['Труд и монтаж', labor]);
+    total += mats + labor;
+  }
+  if (type === 'rad') {
+    const r = PRICE.rad;
+    const panels = needW * r.oversize * r.eurPerW;
+    const pipes = area * r.pipesPerM2;
+    const labor = area * r.laborPerM2;
+    items.push(['Радиатори (панелни T22)', panels], ['Тръби, арматура, фитинги', pipes],
+               ['Труд и монтаж', labor]);
+    total += panels + pipes + labor;
+  }
+  if (type === 'hp') {
+    const kw = needW / 1000;
+    const pump = PRICE.hp.find(p => p.kw >= kw) || PRICE.hp[PRICE.hp.length - 1];
+    items.push(['Термопомпа TCL ' + pump.kw + ' kW', pump.eur]);
+    total += pump.eur;
+  }
+
+  const lo = total * (1 - PRICE.spread), hi = total * (1 + PRICE.spread);
+  $('range').textContent = eur(lo) + ' – ' + eur(hi);
+  $('per').textContent = '≈ ' + eur(total / area) + ' на m² · ' + area + ' m² · '
+    + (type === 'rad' ? 'радиатори' : type === 'hp' ? 'подово + термопомпа' : 'подово отопление')
+    + ' · изолация: ' + ({good:'добра',mid:'средна',bad:'слаба'}[ins]) + (win ? ' · стара дограма' : '');
+  $('brk').innerHTML = items.map(([n, v]) => `<div><span>${n}</span><b>${eur(v)}</b></div>`).join('')
+    + `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px">
+       <span><b style="color:var(--acc2)">Общо</b></span><b>${eur(total)}</b></div>`;
+
+  const kw = Math.max(4, Math.round(needW / 1000));
+  const msg = `Здравейте, изчислих в калкулатора: ${area} m², `
+    + (type === 'rad' ? 'радиатори' : type === 'hp' ? 'подово + термопомпа' : 'подово отопление')
+    + `, изолация ${({good:'добра',mid:'средна',bad:'слаба'}[ins])}`
+    + (win ? ', стара дограма' : '')
+    + `. Излезе ${eur(lo)} – ${eur(hi)}. Може ли точна оферта?`;
+  $('wa').href = 'https://wa.me/359879244416?text=' + encodeURIComponent(msg);
+}
+
+$('area').addEventListener('input', e => { $('areaVal').textContent = e.target.value; calc(); });
+document.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', calc));
+calc();
+</script>
+</body>
+</html>
