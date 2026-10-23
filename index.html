@@ -177,7 +177,10 @@ const PRICE = {
            pipePerM2: {10: 10.0, 15: 6.6},   // метри тръба на m² при стъпка 10/15 см
            m2PerLoop: {10: 9, 15: 14},       // m², които покрива един кръг до 90 м
            tapeM: 0.56, tapePerM2: 0.45,
-           box: 46.37, miscPerM2: 1.50, laborPerM2: 15.00,
+           box: 46.37, endPiece: 35.18,      // кутия + краен елемент (дренаж/обезвъздушител)
+           euroconus: 2.40, euroconusPerLoop: 2,   // евроконус 16×2 — по 2 на кръг
+           valves: 40.00,                    // 2 крана 1" + адаптори на колектор
+           miscPerM2: 1.50, laborPerM2: 15.00,
            manifold: {3:75.73, 4:90.94, 5:106.60, 6:121.95, 7:137.17, 8:152.88,
                       9:168.22, 10:183.42, 11:198.99, 12:214.25} },   // Reiter, цени клиент
   rad:   { eurPerW: 0.0285, oversize: 1.15, pipesPerM2: 8.00, laborPerM2: 15.00 },
@@ -249,12 +252,14 @@ function calc() {
     const pipePerM2 = f.pipePerM2[effStep];
     const loops = Math.max(3, Math.min(12, Math.ceil(area / f.m2PerLoop[effStep])));
     const manifold = f.manifold[loops] || f.manifold[12];
-    const mats = area * (f.underlay20 + pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM + f.miscPerM2)
-                 + manifold + f.box;
-    const matsW = mats * PRICE.vat;
+    const fittings = manifold + f.box + f.endPiece + loops * f.euroconusPerLoop * f.euroconus + f.valves;
+    const perM2 = area * (f.underlay20 + pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM + f.miscPerM2);
+    const matsW = (perM2 + fittings) * PRICE.vat;
     const labor = area * f.laborPerM2 * PRICE.vat;
-    items.push(['Материали с ДДС (подложка EPS 150, ' + (pipePerM2 * area).toFixed(0)
-                + ' м тръба, колектор ' + loops + ' кръга)', matsW],
+    items.push(['Материали по площ (подложка, ' + (pipePerM2 * area).toFixed(0) + ' м тръба, лента)',
+                perM2 * PRICE.vat],
+               ['Колектор ' + loops + ' кръга, кутия, кранове, евроконуси, обезвъздушител',
+                fittings * PRICE.vat],
                ['Труд и монтаж с ДДС', labor]);
     total += matsW + labor;
   }
