@@ -125,8 +125,9 @@ footer a{color:var(--acc2);text-decoration:none}
 
   <h2>Как смятаме</h2>
   <div class="steps">
-    <div class="step"><b>1. Материали по цени от октомври 2026</b><br>
-      подложка 6.90 €/m², тръба 0.46 €/m, колектори Giaco, периферна лента, дребни материали.</div>
+    <div class="step"><b>1. Материали по ценоразписа ни (октомври 2026)</b><br>
+      EPS 150/20 — 10.60 €/m², тръба k-Therm 16×2 — 0.90 €/м, колектор Reiter,
+      колекторна кутия, обиколна лента, скоби. Цени клиент без ДДС + 20% ДДС.</div>
     <div class="step"><b>2. Термопомпа TCL</b><br>
       8 kW — 2 304 €, 10 kW — 2 454 €, 12 kW — 2 760 €, 16 kW — 2 916 € (с ДДС), сплит въздух-вода.</div>
     <div class="step"><b>3. Труд и монтаж</b><br>
@@ -139,18 +140,24 @@ footer a{color:var(--acc2);text-decoration:none}
     ABCHeating · отопление, ВиК и електрика · София и Пловдив<br>
     <a href="tel:+359879244416">+359 87 924 4416</a> ·
     <a href="https://abc-heating.org">abc-heating.org</a>
-    <div style="margin-top:8px;font-size:11.5px">Цените на материалите са с ДДС по актуалния ценоразпис
-    на доставчика (октомври 2026). Изчислението е ориентировъчно и не представлява търговска оферта
+    <div style="margin-top:8px;font-size:11.5px">Цените на материалите са по ценоразписи на
+    CityGas (EPS 150, тръба k-Therm, колектори Reiter) и INNOVITA (термопомпи TCL, радиатори T22),
+    октомври 2026. Изчислението е ориентировъчно и не представлява търговска оферта
     по смисъла на ЗЗП.</div>
   </footer>
 </div>
 
 <script>
 const PRICE = {
-  floor: { underlay: 6.90, pipeM: 0.46, pipePerM2: 6.5, tapeM: 0.46, tapePerM2: 0.45,
-           manifoldPerLoop: 15.40, m2PerLoop: 15, miscPerM2: 2.50, laborPerM2: 18.00 },
+  vat: 1.20,                            // ДДС за материалите от ценоразписа на CityGas (те са без ДДС)
+  floor: { underlay20: 10.60,           // EPS 150/20, цена клиент €/m² (без ДДС)
+           pipeM: 0.90, pipePerM2: 6.5, // тръба k-Therm 16×2, 6.5 м на m²
+           tapeM: 0.56, tapePerM2: 0.45,
+           m2PerLoop: 15, box: 46.37, miscPerM2: 1.50, laborPerM2: 15.00,
+           manifold: {3:75.73, 4:90.94, 5:106.60, 6:121.95, 7:137.17, 8:152.88,
+                      9:168.22, 10:183.42, 11:198.99, 12:214.25} },   // Reiter, цени клиент
   rad:   { eurPerW: 0.0285, oversize: 1.15, pipesPerM2: 8.00, laborPerM2: 15.00 },
-  heatPerM2: 80,                       // W/m² при средна изолация
+  heatPerM2: 80,
   hp: [ {kw: 8, eur: 2304}, {kw: 10, eur: 2454}, {kw: 12, eur: 2760}, {kw: 16, eur: 2916} ],
   insFactor: { good: 0.85, mid: 1.0, bad: 1.20 },
   winFactor: 1.06,
@@ -171,11 +178,15 @@ function calc() {
 
   if (type === 'floor' || type === 'hp') {
     const f = PRICE.floor;
-    const mats = area * (f.underlay + f.pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM
-                 + f.manifoldPerLoop / f.m2PerLoop + f.miscPerM2) * (1 + (factor - 1) * 0.3);
-    const labor = area * f.laborPerM2;
-    items.push(['Материали за подово', mats], ['Труд и монтаж', labor]);
-    total += mats + labor;
+    const loops = Math.max(3, Math.min(12, Math.ceil(area / f.m2PerLoop)));
+    const manifold = f.manifold[loops] || f.manifold[12];
+    const mats = area * (f.underlay20 + f.pipePerM2 * f.pipeM + f.tapePerM2 * f.tapeM + f.miscPerM2)
+                 + manifold + f.box;
+    const matsW = mats * PRICE.vat;
+    const labor = area * f.laborPerM2 * PRICE.vat;
+    items.push(['Материали с ДДС (подложка EPS 150, тръба k-Therm, колектор ' + loops + ' кръга)',
+                matsW], ['Труд и монтаж с ДДС', labor]);
+    total += matsW + labor;
   }
   if (type === 'rad') {
     const r = PRICE.rad;
